@@ -41,19 +41,16 @@ exports.getBookById = async (req, res) => {
 exports.rateBook = (req, res) => {
   const { userId, rating } = req.body;
 
-  // Validation de la note
   if (rating < 0 || rating > 5) {
     return res
       .status(400)
       .json({ error: "La note doit être comprise entre 0 et 5." });
   }
 
-  // Vérification de l'authentification et du userId
   if (!req.userId) {
     return res.status(401).json({ error: "Utilisateur non authentifié." });
   }
 
-  // Récupération de l'id du livre depuis les paramètres
   const bookId = req.params.id;
   if (!bookId) {
     return res
@@ -61,14 +58,12 @@ exports.rateBook = (req, res) => {
       .json({ error: "L'identifiant du livre est manquant." });
   }
 
-  // Rechercher le livre dans la base de données
   Book.findById(bookId)
     .then((book) => {
       if (!book) {
         return res.status(404).json({ error: "Livre non trouvé." });
       }
 
-      // Vérifier si l'utilisateur a déjà noté ce livre
       const userHasRated = book.ratings.some(
         (rating) => rating.userId === req.userId
       );
@@ -76,19 +71,15 @@ exports.rateBook = (req, res) => {
         return res.status(400).json({ error: "Vous avez déjà noté ce livre." });
       }
 
-      // Ajouter la nouvelle note
       const newRating = { userId: req.userId, grade: rating };
       book.ratings.push(newRating);
 
-      // Calculer la nouvelle note moyenne
       const grades = book.ratings.map((r) => r.grade);
       const averageRating =
         grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
 
-      // Mettre à jour la note moyenne du livre
       book.averageRating = averageRating;
 
-      // Sauvegarder les modifications dans la base de données
       book
         .save()
         .then((updatedBook) => res.status(200).json(updatedBook))
