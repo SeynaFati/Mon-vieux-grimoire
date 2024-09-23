@@ -78,7 +78,7 @@ exports.rateBook = (req, res) => {
       const averageRating =
         grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
 
-      book.averageRating = averageRating;
+      book.averageRating = parseFloat(averageRating.toFixed(1));
 
       book
         .save()
