@@ -4,11 +4,13 @@ const bookController = require("../controllers/bookController");
 const authMiddleware = require("../middleware/authMiddleware");
 const ownershipCheck = require("../middleware/ownershipCheck");
 const upload = require("../middleware/images");
+const processImage = require("../middleware/processImage");
 
 router.post(
   "/",
   authMiddleware,
   upload.single("image"),
+  processImage,
   bookController.createBook
 );
 router.get("/", bookController.getBooks);

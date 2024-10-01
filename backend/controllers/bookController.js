@@ -1,11 +1,15 @@
+const fs = require("fs");
 const Book = require("../models/Book");
 
 exports.createBook = async (req, res) => {
   try {
+    console.log("Contenu de req.body.book :", req.body.book);
     const book = JSON.parse(req.body.book);
-    const imageUrl = `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
+    const imageUrl = `${req.protocol}://${req.get("host")}/${
+      req.file.optimizedPath
     }`;
+
+    console.log("URL de l'image optimisée :", imageUrl);
 
     const newBook = new Book({
       ...book,
@@ -16,6 +20,7 @@ exports.createBook = async (req, res) => {
     await newBook.save();
     res.status(201).json({ message: "Livre enregistré !" });
   } catch (error) {
+    console.error("Erreur lors de la création du livre :", error);
     res.status(400).json({ error: error.message });
   }
 };
@@ -32,8 +37,11 @@ exports.getBookById = async (req, res) => {
     if (!book) {
       return res.status(404).json({ message: "Livre non trouvé !" });
     }
+
+    book.imageUrl = book.imageUrl.replace(/\\/g, "/");
     res.status(200).json(book);
   } catch (error) {
+    console.error("Erreur lors de la récupération du livre :", error);
     res.status(500).json({ error: "Erreur serveur" });
   }
 };
@@ -79,7 +87,7 @@ exports.rateBook = (req, res) => {
         grades.reduce((sum, grade) => sum + grade, 0) / grades.length;
 
       book.averageRating = parseFloat(averageRating.toFixed(1));
-
+      book.imageUrl = book.imageUrl.replace(/\\/g, "/");
       book
         .save()
         .then((updatedBook) => res.status(200).json(updatedBook))
@@ -122,7 +130,7 @@ exports.updateBook = async (req, res) => {
     if (!updatedBook) {
       return res.status(404).json({ message: "Livre non trouvé" });
     }
-
+    book.imageUrl = book.imageUrl.replace(/\\/g, "/");
     res.status(200).json({ message: "Livre mis à jour !", book: updatedBook });
   } catch (error) {
     res
