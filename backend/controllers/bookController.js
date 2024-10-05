@@ -8,13 +8,15 @@ exports.createBook = async (req, res) => {
     const imageUrl = `${req.protocol}://${req.get("host")}/${
       req.file.optimizedPath
     }`;
+    if (!req.file) {
+      return res.status(400).json({ message: "L'image est manquante." });
+    }
 
     console.log("URL de l'image optimisée :", imageUrl);
-
     const newBook = new Book({
       ...book,
       userId: req.userId,
-      imageUrl: imageUrl,
+      imageUrl: imageUrl.replace(/\\/g, "/"),
     });
 
     await newBook.save();
@@ -130,7 +132,7 @@ exports.updateBook = async (req, res) => {
     if (!updatedBook) {
       return res.status(404).json({ message: "Livre non trouvé" });
     }
-    book.imageUrl = book.imageUrl.replace(/\\/g, "/");
+    updatedBook.imageUrl = updatedBook.imageUrl.replace(/\\/g, "/");
     res.status(200).json({ message: "Livre mis à jour !", book: updatedBook });
   } catch (error) {
     res
