@@ -14,16 +14,23 @@ const processImage = async (req, res, next) => {
   );
 
   try {
-    await sharp(imagePath).resize(800).png().toFile(optimizedImagePath);
+    await sharp(imagePath)
+      .resize(800)
+      .toFormat("png")
+      .toFile(optimizedImagePath);
 
-    fs.unlinkSync(imagePath);
+    fs.unlink(imagePath, (err) => {
+      if (err) console.error("Erreur lors de la suppression du fichier :", err);
+    });
 
     req.file.optimizedPath = optimizedImagePath;
     next();
   } catch (error) {
-    return res
-      .status(500)
-      .json({ error: "Erreur lors de l'optimisation de l'image." });
+    console.error("Erreur lors de l'optimisation de l'image :", error.message);
+    return res.status(500).json({
+      error: "Erreur lors de l'optimisation de l'image.",
+      details: error.message,
+    });
   }
 };
 
